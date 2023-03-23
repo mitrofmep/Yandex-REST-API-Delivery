@@ -20,7 +20,7 @@ services:
 
   db:
     container_name: yandex-lavka-db
-    image: postgres:12.3
+    image: postgres:15.2
     volumes:
       - dbvolume:/var/lib/postgresql/dbvolume
     ports:
