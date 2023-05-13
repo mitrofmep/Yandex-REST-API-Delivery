@@ -21,7 +21,13 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
     implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.1.0'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '3.0.4'
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.1.0'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '3.0.6'
+    // https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-spring-boot3
+    implementation group: 'io.github.resilience4j', name: 'resilience4j-spring-boot3', version: '2.0.2'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-aop
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: '3.0.6'
+
 }
 
 tasks.named('test') {
