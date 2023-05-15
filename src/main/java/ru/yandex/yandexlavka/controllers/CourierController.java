@@ -49,9 +49,9 @@ public class CourierController {
     @GetMapping("/assignments")
     @RateLimiter(name = "getCouriersAssignments")
     public OrderAssignResponse getCouriersAssignments(@RequestParam(value = "date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate date,
-                                                      @RequestParam(value = "courier_id", required = false) Integer courierId) {
+                                                      @RequestParam(value = "courier_id", required = false) Long courierId) {
         if (date == null) date = LocalDate.now();
-        return courierService.getCouriersAssignments(date, courierId);
+        return courierService.getCouriersAssigns(date, courierId);
     }
 
 }

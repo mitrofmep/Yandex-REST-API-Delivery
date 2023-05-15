@@ -6,14 +6,13 @@ import org.springframework.stereotype.Service;
 import ru.yandex.yandexlavka.dto.*;
 import ru.yandex.yandexlavka.exceptions.InvalidCompleteOrderRequestDtoException;
 import ru.yandex.yandexlavka.exceptions.OrderNotFoundException;
-import ru.yandex.yandexlavka.models.Courier;
-import ru.yandex.yandexlavka.models.CourierType;
-import ru.yandex.yandexlavka.models.Order;
-import ru.yandex.yandexlavka.models.OrderStatus;
+import ru.yandex.yandexlavka.models.*;
+import ru.yandex.yandexlavka.repositories.CourierAssignRepository;
 import ru.yandex.yandexlavka.repositories.CourierRepository;
+import ru.yandex.yandexlavka.repositories.GroupedOrdersRepository;
 import ru.yandex.yandexlavka.repositories.OrderRepository;
+import ru.yandex.yandexlavka.util.CourierAssignToCouriersGroupOrdersMapper;
 import ru.yandex.yandexlavka.util.CreateOrderDtoToOrderMapper;
-import ru.yandex.yandexlavka.util.OrderAssignResponseGenerator;
 import ru.yandex.yandexlavka.util.OrderToOrderDtoMapper;
 
 import java.time.LocalDate;
@@ -28,6 +27,9 @@ public class OrderServiceImpl implements OrderService {
     private final CreateOrderDtoToOrderMapper createOrderDtoToOrderMapper;
     private final OrderToOrderDtoMapper orderToOrderDtoMapper;
     private final CourierRepository courierRepository;
+    private final CourierAssignToCouriersGroupOrdersMapper courierAssignToCouriersGroupOrdersMapper;
+    private final CourierAssignRepository courierAssignRepository;
+    private final GroupedOrdersRepository groupedOrdersRepository;
 
     @Override
     public List<OrderDto> createOrders(CreateOrderRequest createOrderRequest) {
@@ -150,13 +152,21 @@ public class OrderServiceImpl implements OrderService {
 
         while (iterator.hasNext()) {
             Map.Entry<Courier, List<Order>> entry = iterator.next();
-            assignmentForOneCourier(entry.getKey(), entry.getValue());
+            assignmentForOneCourier(entry.getKey(), entry.getValue(), date);
             couriersToResponse.add(entry.getKey());
         }
 
-        OrderAssignResponseGenerator generator = new OrderAssignResponseGenerator(this);
-        OrderAssignResponse orderAssignResponse = generator.getResponse(couriersToResponse, date);
+        List<CourierAssign> courierAssignList = new ArrayList<>();
+        for (Courier courier :
+                couriersToResponse) {
+            List<CourierAssign> allByDateAndCourierId = courierAssignRepository.findAllByDateAndCourierId(date, courier.getId());
+            courierAssignList.addAll(allByDateAndCourierId);
+        }
 
+
+        OrderAssignResponse orderAssignResponse = new OrderAssignResponse();
+        orderAssignResponse.setDate(date.toString());
+        orderAssignResponse.setCouriers(courierAssignList.stream().map(courierAssignToCouriersGroupOrdersMapper::mapToDto).toList());
         orderAssignResponses.add(orderAssignResponse);
 
         return orderAssignResponses;
@@ -188,7 +198,7 @@ public class OrderServiceImpl implements OrderService {
         return courierTypes;
     }
 
-    private void assignmentForOneCourier(Courier courier, List<Order> orders) {
+    private void assignmentForOneCourier(Courier courier, List<Order> orders, LocalDate date) {
 
         int maxOrders = 0;
         int maxRegions = 0;
@@ -233,11 +243,17 @@ public class OrderServiceImpl implements OrderService {
         // промежуточное - минимум сумок для эффективной компоновки
         int res = 0;
 
+
+        GroupedOrders groupedOrders = new GroupedOrders();
+        CourierAssign courierAssign = new CourierAssign();
+        List<Order> ordersToGroup = new ArrayList<>();
+
+
         // пока не превышено допустимое количество заказов для курьера
         Order order = null;
         // перебор по каждому заказу
         for (int i = 0; i < orders.size(); i++) {
-            if (currOrdersSize >= maxOrders || regions.size() >= maxRegions) return;
+            if (currOrdersSize >= maxOrders || regions.size() >= maxRegions) continue;
             Optional<Order> orderFound = orderRepository.findById(orders.get(i).getId());
             if (orderFound.isPresent()) order = orderFound.get();
             if (order.getStatus().equals(OrderStatus.FINISHED) || order.getStatus().equals(OrderStatus.ASSIGNED))
@@ -255,6 +271,7 @@ public class OrderServiceImpl implements OrderService {
                     order.setCourier(courier);
                     order.setStatus(OrderStatus.ASSIGNED);
                     orderRepository.save(order);
+                    ordersToGroup.add(order);
                     regions.add(order.getRegion());
                     break;
                 }
@@ -273,10 +290,18 @@ public class OrderServiceImpl implements OrderService {
                 order.setCourier(courier);
                 order.setStatus(OrderStatus.ASSIGNED);
                 orderRepository.save(order);
+                ordersToGroup.add(order);
                 regions.add(order.getRegion());
                 currOrdersSize++;
             }
         }
+
+        groupedOrders.setOrders(ordersToGroup);
+        groupedOrdersRepository.save(groupedOrders);
+        courierAssign.setCourier(courier);
+        courierAssign.setOrders(List.of(groupedOrders));
+        courierAssign.setDate(date);
+        courierAssignRepository.save(courierAssign);
     }
 
 }

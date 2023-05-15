@@ -5,19 +5,20 @@ import org.springframework.stereotype.Service;
 import ru.yandex.yandexlavka.dto.*;
 import ru.yandex.yandexlavka.exceptions.CourierNotFoundException;
 import ru.yandex.yandexlavka.models.Courier;
+import ru.yandex.yandexlavka.models.CourierAssign;
 import ru.yandex.yandexlavka.models.CourierType;
 import ru.yandex.yandexlavka.models.Order;
+import ru.yandex.yandexlavka.repositories.CourierAssignRepository;
 import ru.yandex.yandexlavka.repositories.CourierRepository;
 import ru.yandex.yandexlavka.repositories.OrderRepository;
+import ru.yandex.yandexlavka.util.CourierAssignToCouriersGroupOrdersMapper;
 import ru.yandex.yandexlavka.util.CourierToCourierDtoMapper;
 import ru.yandex.yandexlavka.util.CreateCourierDtoToCourierMapper;
-import ru.yandex.yandexlavka.util.OrderAssignResponseGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +31,8 @@ public class CourierServiceImpl implements CourierService {
     private final CreateCourierDtoToCourierMapper createCourierDtoToCourierMapper;
     private final OrderRepository orderRepository;
     private final OrderServiceImpl orderService;
+    private final CourierAssignRepository courierAssignRepository;
+    private final CourierAssignToCouriersGroupOrdersMapper courierAssignToCouriersGroupOrdersMapper;
 
     @Override
     public CreateCourierResponse createCouriers(CreateCourierRequest createCourierRequest) {
@@ -135,17 +138,20 @@ public class CourierServiceImpl implements CourierService {
         }
     }
 
-    public OrderAssignResponse getCouriersAssignments(LocalDate date, Integer courierId) {
-        List<Courier> couriers = null;
+    public OrderAssignResponse getCouriersAssigns(LocalDate date, Long courierId) {
+        List<CourierAssign> courierAssignList = null;
         if (courierId != null) {
-            Optional<Courier> foundCourier = courierRepository.findById((long) courierId);
-            if (foundCourier.isPresent()) couriers = Collections.singletonList(foundCourier.get());
+            courierAssignList = courierAssignRepository.findAllByDateAndCourierId(date, courierId);
         } else {
-            couriers = courierRepository.findAll();
+            courierAssignList = courierAssignRepository.findAllByDate(date);
         }
 
-        OrderAssignResponseGenerator generator = new OrderAssignResponseGenerator(orderService);
+        OrderAssignResponse orderAssignResponse = new OrderAssignResponse();
 
-        return generator.getResponse(couriers, date);
+        orderAssignResponse.setDate(date.toString());
+
+        orderAssignResponse.setCouriers(courierAssignList.stream().map(courierAssignToCouriersGroupOrdersMapper::mapToDto).toList());
+
+        return orderAssignResponse;
     }
 }

@@ -14,5 +14,5 @@ public interface CourierService {
 
     GetCourierMetaInfoResponse getCourierMetaInfoBetweenStartDateAndEndDate(long courierId, LocalDate startDate, LocalDate endDate);
 
-    OrderAssignResponse getCouriersAssignments(LocalDate date, Integer courierId);
+    OrderAssignResponse getCouriersAssigns(LocalDate date, Long courierId);
 }

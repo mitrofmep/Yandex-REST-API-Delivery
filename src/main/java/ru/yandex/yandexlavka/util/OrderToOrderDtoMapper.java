@@ -11,14 +11,10 @@ public class OrderToOrderDtoMapper implements ModelToDtoMapper<Order, OrderDto> 
     public OrderDto mapToDto(Order order) {
         OrderDto orderDto = new OrderDto();
         orderDto.setOrderId(order.getId());
-        orderDto.setCost(order.getCost());
         orderDto.setWeight(order.getWeight());
+        orderDto.setCost(order.getCost());
         orderDto.setRegion(order.getRegion());
-        orderDto.setDeliveryHours(
-                order.getDeliveryHours().stream()
-                        .map(this::mapDeliveryHourToString)
-                        .toList()
-        );
+        orderDto.setDeliveryHours(order.getDeliveryHours().stream().map(this::mapDeliveryHourToString).toList());
         if (order.getCompleteTime() != null) {
             orderDto.setCompletedTime(order.getCompleteTime().toString());
         }
