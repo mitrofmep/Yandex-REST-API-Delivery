@@ -4,13 +4,16 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.yandexlavka.dto.CompleteOrderRequestDto;
 import ru.yandex.yandexlavka.dto.CreateOrderRequest;
+import ru.yandex.yandexlavka.dto.OrderAssignResponse;
 import ru.yandex.yandexlavka.dto.OrderDto;
 import ru.yandex.yandexlavka.services.OrderServiceImpl;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -45,5 +48,10 @@ public class OrderController {
         return orderService.completeOrders(completeOrderRequestDto);
     }
 
-
+    @PostMapping("/assign")
+    @RateLimiter(name = "assignOrders")
+    public List<OrderAssignResponse> assignOrders(@RequestParam(value = "date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate date) {
+        if (date == null) date = LocalDate.now();
+        return orderService.assignOrders(date);
+    }
 }

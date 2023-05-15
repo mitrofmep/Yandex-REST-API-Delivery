@@ -33,6 +33,10 @@ public class Courier {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "courier")
     private List<Order> orders;
 
+    @Transient
+    private int capacity;
+    
+
     @Override
     public String toString() {
         return "Courier{" +

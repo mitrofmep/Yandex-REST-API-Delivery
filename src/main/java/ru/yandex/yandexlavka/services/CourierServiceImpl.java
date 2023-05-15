@@ -11,11 +11,13 @@ import ru.yandex.yandexlavka.repositories.CourierRepository;
 import ru.yandex.yandexlavka.repositories.OrderRepository;
 import ru.yandex.yandexlavka.util.CourierToCourierDtoMapper;
 import ru.yandex.yandexlavka.util.CreateCourierDtoToCourierMapper;
+import ru.yandex.yandexlavka.util.OrderAssignResponseGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +29,7 @@ public class CourierServiceImpl implements CourierService {
     private final CourierToCourierDtoMapper courierToCourierDtoMapper;
     private final CreateCourierDtoToCourierMapper createCourierDtoToCourierMapper;
     private final OrderRepository orderRepository;
-
+    private final OrderServiceImpl orderService;
 
     @Override
     public CreateCourierResponse createCouriers(CreateCourierRequest createCourierRequest) {
@@ -131,5 +133,19 @@ public class CourierServiceImpl implements CourierService {
             }
             default -> throw new IllegalArgumentException("Unknown courierType" + courierType);
         }
+    }
+
+    public OrderAssignResponse getCouriersAssignments(LocalDate date, Integer courierId) {
+        List<Courier> couriers = null;
+        if (courierId != null) {
+            Optional<Courier> foundCourier = courierRepository.findById((long) courierId);
+            if (foundCourier.isPresent()) couriers = Collections.singletonList(foundCourier.get());
+        } else {
+            couriers = courierRepository.findAll();
+        }
+
+        OrderAssignResponseGenerator generator = new OrderAssignResponseGenerator(orderService);
+
+        return generator.getResponse(couriers, date);
     }
 }

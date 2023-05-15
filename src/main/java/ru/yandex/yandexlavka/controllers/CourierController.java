@@ -46,4 +46,12 @@ public class CourierController {
         return courierService.getCourierMetaInfoBetweenStartDateAndEndDate(courierId, startDate, endDate);
     }
 
+    @GetMapping("/assignments")
+    @RateLimiter(name = "getCouriersAssignments")
+    public OrderAssignResponse getCouriersAssignments(@RequestParam(value = "date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate date,
+                                                      @RequestParam(value = "courier_id", required = false) Integer courierId) {
+        if (date == null) date = LocalDate.now();
+        return courierService.getCouriersAssignments(date, courierId);
+    }
+
 }
