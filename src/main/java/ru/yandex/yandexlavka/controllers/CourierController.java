@@ -21,25 +21,25 @@ public class CourierController {
     private final CourierServiceImpl courierService;
 
     @PostMapping
-    @RateLimiter(name = "postCouriers")
+    @RateLimiter(name = "basic")
     public CreateCourierResponse postCouriers(@RequestBody @Valid CreateCourierRequest createCourierRequest) {
         return courierService.createCouriers(createCourierRequest);
     }
 
     @GetMapping
-    @RateLimiter(name = "getCouriers")
+    @RateLimiter(name = "basic")
     public GetCouriersResponse getCouriers(@RequestParam(defaultValue = "1", required = false) @Min(0) int limit, @RequestParam(defaultValue = "0", required = false) @Min(0) int offset) {
         return courierService.getCouriers(limit, offset);
     }
 
     @GetMapping("/{courier_id}")
-    @RateLimiter(name = "getCourier")
+    @RateLimiter(name = "basic")
     public CourierDto getCourier(@PathVariable(name = "courier_id") long courierId) {
         return courierService.getCourier(courierId);
     }
 
     @GetMapping("/meta-info/{courier_id}")
-    @RateLimiter(name = "getCourierMetaInfo")
+    @RateLimiter(name = "basic")
     public GetCourierMetaInfoResponse getCourierMetaInfo(@PathVariable(name = "courier_id") long courierId,
                                                          @RequestParam(value = "startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull @Valid LocalDate startDate,
                                                          @RequestParam(value = "endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @NotNull @Valid LocalDate endDate) {
@@ -47,7 +47,7 @@ public class CourierController {
     }
 
     @GetMapping("/assignments")
-    @RateLimiter(name = "getCouriersAssignments")
+    @RateLimiter(name = "basic")
     public OrderAssignResponse getCouriersAssignments(@RequestParam(value = "date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate date,
                                                       @RequestParam(value = "courier_id", required = false) Long courierId) {
         if (date == null) date = LocalDate.now();

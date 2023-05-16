@@ -24,32 +24,32 @@ public class OrderController {
     private final OrderServiceImpl orderService;
 
     @PostMapping
-    @RateLimiter(name = "createOrders")
+    @RateLimiter(name = "basic")
     public List<OrderDto> createOrders(@RequestBody @Valid CreateOrderRequest createOrderRequest) {
         return orderService.createOrders(createOrderRequest);
     }
 
     @GetMapping
-    @RateLimiter(name = "getOrders")
+    @RateLimiter(name = "basic")
     public List<OrderDto> getOrders(@RequestParam(required = false, defaultValue = "1") @PositiveOrZero int limit,
                                     @RequestParam(required = false, defaultValue = "0") @PositiveOrZero int offset) {
         return orderService.getOrders(limit, offset);
     }
 
     @GetMapping("/{order_id}")
-    @RateLimiter(name = "getOrderById")
+    @RateLimiter(name = "basic")
     public OrderDto getOrderById(@PathVariable(name = "order_id") long orderId) {
         return orderService.getOrder(orderId);
     }
 
     @PostMapping("/complete")
-    @RateLimiter(name = "completeOrders")
+    @RateLimiter(name = "basic")
     public List<OrderDto> completeOrders(@RequestBody @Valid CompleteOrderRequestDto completeOrderRequestDto) {
         return orderService.completeOrders(completeOrderRequestDto);
     }
 
     @PostMapping("/assign")
-    @RateLimiter(name = "assignOrders")
+    @RateLimiter(name = "basic")
     public List<OrderAssignResponse> assignOrders(@RequestParam(value = "date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate date) {
         if (date == null) date = LocalDate.now();
         return orderService.assignOrders(date);
