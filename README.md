@@ -1,7 +1,9 @@
 # Yandex.Lavka Courier Service
 
 This is a RESTful API for the Yandex.Lavka courier service, implemented using Java Spring Boot, Docker, Gradle, and
-OpenAPI.
+OpenAPI. 
+
+Designed for `School of Backend Development in Yandex 2023`.
 
 The service provides basic CRUD operations for orders and couriers and allows for the automatic distribution of orders
 between couriers for maximum efficiency.
